@@ -10,9 +10,16 @@ const testString* = """
            99
         }
     }
-    echo [eval $x]
-    f asdasdasdsa
+    if [cmp 99 99] {echo "99 does equal 99"}
+    if true {
+        echo "It was true!"
+    }
+    if "" {} {
+        echo "It was false!"
+    }
+    f "Calling a command"
 """
 
 for cmd in tclParse(testString):
-  echo $(tclEval(cmd))
+  let val = tclEval(cmd)
+  if val != Null: echo $(val)

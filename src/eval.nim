@@ -1,4 +1,4 @@
-import tables,sequtils, strutils
+import tables, sequtils, strutils
 import parse
 
 type
@@ -11,11 +11,14 @@ type
     vars: TclTable[TclValue]
     cmds: TclTable[TclCmd]
 
-proc `$`*(v: TclValue) : string = $(v.data)
+proc tclEval*(e: Expr): TclValue # forward declaration
 
 proc newValue(s: string = ""): TclValue =
   result = new(TclValue)
   result.data = s
+
+proc `$`*(v: TclValue) : string = $(v.data)
+proc `==`*(a,b: TclValue): bool = a.data == b.data
 
 proc newContext(): TclContext =
   new(result)
@@ -25,15 +28,20 @@ proc newContext(): TclContext =
 proc setVars(ctx: TclContext, vars: seq[(string, TclValue)]) =
   for v in vars: ctx.vars[v[0]] = v[1]
 
-let Null = newValue()
-proc tclEval*(e: Expr): TclValue
+proc eval(v: TclValue): TclValue =
+  for e in v.data.tclParse():
+    result = e.tclEval()
 
-var ctx = newContext()
+let
+  Null* = newValue()
+  True* = newValue("true")
+
+var ctx = newContext()          # used to register command procs
 
 template defcmd(cmdName: string, procName, body: untyped): untyped =
   proc procName(c: TclContext, a: seq[TclValue]): TclValue =
     var ctx {. inject .} = c    # for some reason the inject pragma doesn't work
-    var args {. inject .} = a   # work in proc formal params list
+    var args {. inject .} = a   # in proc formal params list
     body
   ctx.cmds[cmdName] = procName
 
@@ -49,23 +57,37 @@ defcmd("proc", cmdProc):
         innerCtx.setVars(zip(argNames, repeat(Null, len(argNames)))) # TODO: restore previous values
   ctx.cmds.add(procName, procClosure)
   Null
+
 defcmd("set", cmdSetVar):
   if len(args) != 2: return Null
   let name = args[0].data
   ctx.vars[name] = args[1]
   return args[1]
+
 defcmd("concat", cmdConcat):
   result = newValue()
   for v in args:
     result.data &= v.data
+
 defcmd("eval", cmdEval):
   if len(args) < 1: return Null
   for e in args[0].data.tclParse():
     result = tclEval(e)
+
 defcmd("echo", cmdEcho):
   for arg in args: stdout.write(arg.data)
   stdout.write("\n")
   Null
+
+defcmd("cmp", cmdCmp):
+  if len(args) != 2: return Null
+  if args[0] != args[1]: return Null
+  return True
+
+defcmd("if", cmdIf):
+  if len(args) notin {2, 3}: return Null
+  if args[0] == True: return args[1].eval()
+  else: return (if len(args) == 3: args[2].eval() else: Null)
 
 proc tclEval*(e: Expr): TclValue =
   result = newValue()

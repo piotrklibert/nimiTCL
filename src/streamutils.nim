@@ -1,8 +1,7 @@
 import streams
 import strutils
 
-const
-  StopChar* = '\0'
+const StopChar* = '\0'
 
 proc readWhile*(stream: var StringStream, match: set[char]) : string =
   result = ""
