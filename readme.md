@@ -22,6 +22,14 @@ to. That being said, it's easy to extend and if you're willing to go above the
 
 See `src/main.nim` for supported language constructs.
 
+You can clone, build and run the interpreter with the following commands,
+provided that you have Nim and [Nimble](https://github.com/nim-lang/nimble)
+installed:
+
+    git clone https://github.com/piotrklibert/nimiTCL && cd nimiTCL
+    nimble build && src/main
+
+
 ## How?
 
 Nim is a statically typed, natively compiled (via C) language with rich type
