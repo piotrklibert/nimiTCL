@@ -33,12 +33,9 @@ proc `$`*(e: Expr) : string =
   of Variable:     return "Var: " & e.varName
   of Command:      return "<Cmd: [" & e.cBody.map(`$`).join(", ") & "]>"
 
-
 type Parser* = object
   insideQuotes: bool
   stream: StringStream
-
-
 
 proc init*(p: var Parser, source: string) = p.stream = newStringStream(source)
 proc initParser*(source: string): Parser = result.stream = newStringStream(source)
@@ -61,7 +58,6 @@ proc skipWhitespace(p: var Parser) : var Parser {. discardable .} =
 
 proc skipAndPeek(p: var Parser): char =
   p.skipWhitespace().skipComment().peekChar()
-
 
 # Parsing logic
 proc parseAtom(p: var Parser): Expr;

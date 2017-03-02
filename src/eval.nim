@@ -45,6 +45,11 @@ template defcmd(cmdName: string, procName, body: untyped): untyped =
     body
   ctx.cmds[cmdName] = procName
 
+defcmd("eval", cmdEval):
+  if len(args) < 1: return Null
+  for e in args[0].data.tclParse():
+    result = tclEval(e)
+
 defcmd("proc", cmdProc):
   if len(args) != 3: return Null
   let
@@ -53,7 +58,7 @@ defcmd("proc", cmdProc):
       proc (innerCtx: TclContext, innerArgs: seq[TclValue]): TclValue =
         let argNames = args[1].data.split(" ")
         innerCtx.setVars(zip(argNames, innerArgs))
-        result = tclEval(tclParse(args[2].data)[0])
+        result = innerCtx.cmdEval(@[args[2]])
         innerCtx.setVars(zip(argNames, repeat(Null, len(argNames)))) # TODO: restore previous values
   ctx.cmds.add(procName, procClosure)
   Null
@@ -69,10 +74,6 @@ defcmd("concat", cmdConcat):
   for v in args:
     result.data &= v.data
 
-defcmd("eval", cmdEval):
-  if len(args) < 1: return Null
-  for e in args[0].data.tclParse():
-    result = tclEval(e)
 
 defcmd("echo", cmdEcho):
   for arg in args: stdout.write(arg.data)
