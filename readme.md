@@ -3,7 +3,7 @@
 ## What?
 
 A toy interpreter in less than *300* loc (current count (incl. empty lines):
-**273**).
+**275**).
 
 The original goalpost was *500* loc, but it was in C. Nim aims to be close to C
 in terms of speed, but it competes with languages like Python in terms of
@@ -15,7 +15,7 @@ It's a toy: it doesn't implement the full TCL language and it was never meant
 to. That being said, it's easy to extend and if you're willing to go above the
 300 loc mark you can quickly make it useful. For this you would need at least:
 
-* better proc implementation (proper call frames)
+* ~better proc implementation (proper call frames)~ - **DONE**
 * expr command
 * loops, break and continue
 * uplevel and friends
@@ -29,6 +29,10 @@ installed:
     git clone https://github.com/piotrklibert/nimiTCL && cd nimiTCL
     nimble build && src/main
 
+When you run the compiled program it'll first run some hardcoded TCL code and
+then start a very simple (one-line only, as it's not integrated with the
+parser - use `;` instead of `\n` to separate commands in the bodies of `proc`s
+or `if`s) REPL.
 
 ## How?
 
