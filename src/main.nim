@@ -2,8 +2,8 @@ import parse, eval
 
 const testString* = """
     set a "str1"
-    set b [concat $a"-str2" longer_str_3]
-    $a$b 13                             # a comment, will be ignored
+    set b [concat -- $a"-str2" longer_str_3]
+    $a$b 13                                  # a comment, will be ignored
     proc f {a} {
         echo $a
     }
@@ -20,11 +20,14 @@ const testString* = """
     if true {
         echo "It was true!"
     }
-    if "" {} {
-        echo "It was false!"
-    }
+    if "" {} {echo "It was false!"}
     f "Calling a command"
     if [cmp $a "str1"] {echo "a value: $a"}
+    set b "a"
+    while {not [cmp $b "aaaaaaaaaaa"]} {
+        echo Iterating: $b
+        set b [concat $b "a"]
+    }
 """
 
 let ctx = getContext()

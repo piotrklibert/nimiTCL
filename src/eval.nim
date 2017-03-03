@@ -2,15 +2,15 @@ import tables, sequtils, strutils
 import parse
 
 type
+  TclReturn = object of Exception
+    val: TclValue
   TclTable[T] = TableRef[string, T]
   TclCmd = proc (ctx: TclContext, args: seq[TclValue]): TclValue
   TclValue = ref object of RootObj
     data: string
-
   TclContext = ref object
     vars: TclTable[TclValue]
     cmds: TclTable[TclCmd]
-
 
 proc newValue(s: string = ""): TclValue =
   result = new(TclValue)
@@ -29,7 +29,12 @@ proc copy*(ctx: TclContext): TclContext = result.deepCopy(ctx)
 proc eval*(ctx: TclContext, e: Expr): TclValue # the most primitive kind of eval
 proc eval*(ctx: TclContext, s: string): TclValue =
   for expression in tclParse(s):
-    result = ctx.eval(expression)
+    try:
+      result = ctx.eval(expression)
+    except TclReturn:
+      let e = (ref TclReturn)(getCurrentException())
+      result = e.val
+
 proc eval(ctx: TclContext, v: TclValue): TclValue = ctx.eval(v.data)
 proc eval(ctx: TclContext, e: Expr): TclValue =
   result = newValue()
@@ -45,8 +50,7 @@ proc eval(ctx: TclContext, e: Expr): TclValue =
     if ctx.vars.hasKey(e.varName):
       result.data = ctx.vars[e.varName].data
   of Substitution:
-    for ex in e.subBody.tclParse():
-      result.data = ctx.eval(ex).data
+      result.data = ctx.eval(e.subBody).data
   of Word:
     for ex in e.wBody:
       result.data &= ctx.eval(ex).data
@@ -60,7 +64,7 @@ proc setVars(ctx: TclContext, vars: seq[(string, TclValue)]) =
 let
   Null* = newValue()
   True* = newValue("true")
-var baseContext = newContext()
+let baseContext = newContext()
 include "commands"
 baseContext.cmds = registeredCommands
 proc getContext*(): TclContext = baseContext.copy()
