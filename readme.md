@@ -3,7 +3,7 @@
 ## What?
 
 A toy interpreter in less than *300* loc (current count (incl. empty lines):
-**275**).
+**299**).
 
 The original goalpost was *500* loc, but it was in C. Nim aims to be close to C
 in terms of speed, but it competes with languages like Python in terms of
@@ -15,10 +15,13 @@ It's a toy: it doesn't implement the full TCL language and it was never meant
 to. That being said, it's easy to extend and if you're willing to go above the
 300 loc mark you can quickly make it useful. For this you would need at least:
 
-* ~better proc implementation (proper call frames)~ - **DONE**
+* ~~better proc implementation (proper call frames)~~ - **DONE**
+* ~~`return` handling~~ - **DONE**
+* ~~`while` loop~~ - **DONE**
+* for loop
+* break and continue
 * expr command
-* loops, break and continue
-* uplevel and friends
+* uplevel, upvar
 
 See `src/main.nim` for supported language constructs.
 
