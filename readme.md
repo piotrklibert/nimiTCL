@@ -59,6 +59,9 @@ to C) include:
   to split the code over multiple files
 * [enum and object variants](https://nim-lang.org/docs/manual.html#types-object-variants)
   to represent tokens in the parser
+* [built-in deepCopy support](https://nim-lang.org/docs/manual.html#type-bound-operations-deepcopy)
+  to get the call frames (it's wastes some memory, but thanks to this feature
+  it took literaly 3 lines of code to implement call frames)
 
 ## Why?
 
