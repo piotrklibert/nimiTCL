@@ -2,8 +2,8 @@ import tables, sequtils, strutils
 import parse
 
 type
-  TclReturn = object of Exception
-    val: TclValue
+  TclReturn* = object of Exception
+    val*: TclValue
   TclTable[T] = TableRef[string, T]
   TclCmd = proc (ctx: TclContext, args: seq[TclValue]): TclValue
   TclValue = ref object of RootObj
@@ -11,6 +11,7 @@ type
   TclContext = ref object
     vars: TclTable[TclValue]
     cmds: TclTable[TclCmd]
+    insideProc: bool
 
 proc newValue(s: string = ""): TclValue =
   result = new(TclValue)
@@ -21,19 +22,16 @@ proc `==`*(a,b: TclValue): bool = a.data == b.data
 
 proc newContext*(): TclContext =
   new(result)
+  result.insideProc = false
   result.vars = newTable[string, TclValue]()
   result.cmds = newTable[string, TclCmd]()
 
-proc copy*(ctx: TclContext): TclContext = result.deepCopy(ctx)
+proc copy*(ctx: TclContext, inside: bool = false): TclContext = result.deepCopy(ctx); result.insideProc = inside
 
 proc eval*(ctx: TclContext, e: Expr): TclValue # the most primitive kind of eval
 proc eval*(ctx: TclContext, s: string): TclValue =
   for expression in tclParse(s):
-    try:
       result = ctx.eval(expression)
-    except TclReturn:
-      let e = (ref TclReturn)(getCurrentException())
-      result = e.val
 
 proc eval(ctx: TclContext, v: TclValue): TclValue = ctx.eval(v.data)
 proc eval(ctx: TclContext, e: Expr): TclValue =

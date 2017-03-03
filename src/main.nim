@@ -28,6 +28,12 @@ const testString* = """
         echo Iterating: $b
         set b [concat $b "a"]
     }
+    proc ff {} {
+        echo "Inside `ff`"
+        return "asd"
+        echo "Won't get here!"
+    }
+    ff
 """
 
 let ctx = getContext()
@@ -38,7 +44,8 @@ for cmd in tclParse(testString):
 while true:
   stdout.write("> ")
   try:
-    echo $(ctx.eval(stdin.readLine()))
+    let res = $(ctx.eval(stdin.readLine()))
+    if res != "": echo res
   except IOError:
     echo "Exiting."
     break

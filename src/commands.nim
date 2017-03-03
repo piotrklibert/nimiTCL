@@ -25,9 +25,13 @@ defcmd("proc", cmdProc):
     procClosure =
       proc (innerCtx: TclContext, innerArgs: seq[TclValue]): TclValue =
         let argNames = args[1].data.split(" ")
-        let ctx = innerCtx.copy()
+        let ctx = innerCtx.copy(true)
         ctx.setVars(zip(argNames, innerArgs))
-        result = ctx.eval(args[2])
+        try:
+          result = ctx.eval(args[2])
+        except TclReturn:
+          result = ((ref TclReturn)(getCurrentException())).val
+
   ctx.cmds.add(procName, procClosure)
   Null
 
@@ -44,9 +48,12 @@ defcmd("concat", cmdConcat):
     result.data &= v.data
 
 defcmd("return", cmdReturn):
-  var e = newException(TclReturn, "")
-  e.val = args[0]
-  raise e
+  if ctx.insideProc:
+    var e = newException(TclReturn, "")
+    e.val = (if len(args) == 0: Null else: args[0])
+    raise e
+  else:
+    return args[0]
 
 defcmd("echo", cmdEcho):
   for arg in args: stdout.write(arg.data)
