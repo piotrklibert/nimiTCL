@@ -35,7 +35,7 @@ for cmd in tclParse(testString):
 while true:
   stdout.write("> ")
   try:
-    echo $(eval(stdin.readLine()))
+    echo $(ctx.eval(stdin.readLine()))
   except IOError:
     echo "Exiting."
     break
